@@ -1,14 +1,17 @@
-name: Flutter Build and Deploy
+name: Flutter » Streamlined CI/CD Pipeline
 run-name: ${{ github.actor }} is publishing (${{ github.ref }}) 🚀
 
 on:
   push:
+    workflow_dispatch:
+    pull_request:
     branches:
-      - main
+      - dev
+      - production
 
 jobs:
   analyze:
-    name: Analyze
+    name: Build and Analyze
     runs-on: ubuntu-latest
 
     steps:
