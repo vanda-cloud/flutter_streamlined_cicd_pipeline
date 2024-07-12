@@ -1,0 +1,85 @@
+name: Flutter Build and Deploy
+run-name: ${{ github.actor }} is publishing (${{ github.ref }}) 🚀
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0' # specify the correct version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: analyze
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0' # specify the correct version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: analyze
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0' # specify the correct version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Set up Xcode
+        run: sudo xcode-select --switch /Applications/Xcode.app
+
+      - name: Build iOS
+        run: flutter build ios --release
+
+      - name: Upload IPA to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-release-ipa
+          path: build/ios/ipa/release/*.ipa
