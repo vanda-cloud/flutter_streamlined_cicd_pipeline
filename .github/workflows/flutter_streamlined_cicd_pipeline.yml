@@ -45,10 +45,37 @@ jobs:
       - name: Run test
         run: flutter test
 
+  test:
+    name: 4 Automated Tests
+    runs-on: macos-latest
+    needs: analyze    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+
+      - name: Cache Flutter SDK
+        uses: actions/cache@v2
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
+
+      - name: Run test
+        run: flutter test
+
   build-android:
     name: Build Android
     runs-on: macos-latest
-    needs: analyze
+    needs: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -93,6 +120,17 @@ jobs:
       # - name: Build Android
       #   run: flutter build apk --debug --split-per-abi
 
+  release:
+    name: Release Apps
+    runs-on: macos-latest
+    needs: build-ios
+    steps:
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
 # jobs:
 #   build:
