@@ -15,7 +15,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -24,13 +24,13 @@ jobs:
           java-version: '11'
 
       - name: Cache Flutter SDK
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v3
         with:
           flutter-version: '3.22.2' # specify the correct version
 
@@ -52,7 +52,7 @@ jobs:
     needs: analyze    
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -61,13 +61,13 @@ jobs:
           java-version: '11'
 
       - name: Cache Flutter SDK
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v3
         with:
           flutter-version: '3.22.2' # specify the correct version
 
@@ -80,7 +80,7 @@ jobs:
     needs: test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -89,7 +89,7 @@ jobs:
           java-version: '11'
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v3
         with:
           flutter-version: '3.22.2'
 
@@ -105,7 +105,7 @@ jobs:
     needs: build-android
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -114,7 +114,7 @@ jobs:
           java-version: '11'
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v3
         with:
           flutter-version: '3.22.2'
 
@@ -141,11 +141,11 @@ jobs:
 #     name: Build & Release
 #     runs-on: macos-latest
 #     steps:
-#       - uses: actions/checkout@v2
+#       - uses: actions/checkout@v3
 #       - uses: actions/setup-java@v1
 #         with:
 #           java-version: '11'
-#       - uses: subosito/flutter-action@v2
+#       - uses: subosito/flutter-action@v3
 #         with:
 #           flutter-version: '3.22.2'
 #       - run: flutter pub get
@@ -175,16 +175,16 @@ jobs:
 
 #     steps:
 #       - name: Checkout repository
-#         uses: actions/checkout@v2
+#         uses: actions/checkout@v3
 
 #       - name: Cache Flutter SDK
-#         uses: actions/cache@v2
+#         uses: actions/cache@v3
 #         with:
 #           path: ~/.pub-cache
 #           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
 
 #       - name: Set up Flutter
-#         uses: subosito/flutter-action@v2
+#         uses: subosito/flutter-action@v3
 #         with:
 #           flutter-version: '3.22.2' # specify the correct version
 
@@ -207,10 +207,10 @@ jobs:
 
 #     steps:
 #       - name: Checkout repository
-#         uses: actions/checkout@v2
+#         uses: actions/checkout@v3
 
 #       - name: Set up Flutter
-#         uses: subosito/flutter-action@v2
+#         uses: subosito/flutter-action@v3
 #         with:
 #           flutter-version: '3.22.2' # specify the correct version
 
@@ -221,7 +221,7 @@ jobs:
 #         run: flutter build apk --release
 
 #       - name: Upload APK to artifacts
-#         uses: actions/upload-artifact@v2
+#         uses: actions/upload-artifact@v3
 #         with:
 #           name: android-release-apk
 #           path: build/app/outputs/flutter-apk/app-release.apk
@@ -233,10 +233,10 @@ jobs:
 
 #   #   steps:
 #   #     - name: Checkout repository
-#   #       uses: actions/checkout@v2
+#   #       uses: actions/checkout@v3
 
 #   #     - name: Set up Flutter
-#   #       uses: subosito/flutter-action@v2
+#   #       uses: subosito/flutter-action@v3
 #   #       with:
 #   #         flutter-version: '3.22.2' # specify the correct version
 
@@ -250,7 +250,7 @@ jobs:
 #   #       run: flutter build ios --release
 
 #   #     - name: Upload IPA to artifacts
-#   #       uses: actions/upload-artifact@v2
+#   #       uses: actions/upload-artifact@v3
 #   #       with:
 #   #         name: ios-release-ipa
 #   #         path: build/ios/ipa/release/*.ipa
