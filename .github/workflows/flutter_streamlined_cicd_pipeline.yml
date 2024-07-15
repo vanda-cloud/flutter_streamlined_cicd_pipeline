@@ -44,96 +44,93 @@ jobs:
       - name: Analyze code
         run: flutter analyze
 
-      # - name: Archive Flutter SDK
-      #   # if: steps.cache-flutter.outputs.cache-hit != 'true'
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: flutter-sdk
-      #     path: ~/.pub-cache
+      - name: Archive Flutter SDK
+        # if: steps.cache-flutter.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-sdk
+          path: ~/.pub-cache
+
+  test:
+    name: 4 Automated Tests
+    runs-on: macos-latest
+    needs: analyze    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download Flutter SDK
+        uses: actions/download-artifact@v3
+        with:
+          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+          path: ~/.pub-cache
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
+
+      - name: Run tests
+        run: flutter test
+
+  build-android:
+    name: Build Android
+    runs-on: macos-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download Flutter SDK
+        uses: actions/download-artifact@v3
+        with:
+          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+          path: ~/.pub-cache
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
 
       - name: Build Android
         run: flutter build apk --debug --split-per-abi
 
-  # test:
-  #   name: 4 Automated Tests
-  #   runs-on: macos-latest
-  #   needs: analyze    
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: build-android
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - name: Download Flutter SDK
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: flutter-sdk # Ensure this matches the name used in upload-artifact above
-  #         path: ~/.pub-cache
+      - name: Download Flutter SDK
+        uses: actions/download-artifact@v3
+        with:
+          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+          path: ~/.pub-cache
 
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.22.2' # specify the correct version
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
 
-  #     - name: Run tests
-  #       run: flutter test
+      - run: |
+          flutter build ios --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r app.ipa Payload
 
-  # build-android:
-  #   name: Build Android
-  #   runs-on: macos-latest
-  #   needs: test
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-
-  #     - name: Download Flutter SDK
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: flutter-sdk # Ensure this matches the name used in upload-artifact above
-  #         path: ~/.pub-cache
-
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.22.2' # specify the correct version
-
-  #     - name: Build Android
-  #       run: flutter build apk --debug --split-per-abi
-
-  # build-ios:
-  #   name: Build iOS
-  #   runs-on: macos-latest
-  #   needs: build-android
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-
-  #     - name: Download Flutter SDK
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: flutter-sdk # Ensure this matches the name used in upload-artifact above
-  #         path: ~/.pub-cache
-
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.22.2' # specify the correct version
-
-  #     - run: |
-  #         flutter build ios --no-codesign
-  #         cd build/ios/iphoneos
-  #         mkdir Payload
-  #         cd Payload
-  #         ln -s ../Runner.app
-  #         cd ..
-  #         zip -r app.ipa Payload
-
-  # release:
-  #   name: Release Apps
-  #   runs-on: macos-latest
-  #   needs: build-ios
-  #   steps:
-  #     - name: Push to Releases
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
-  #         tag: v1.0.${{ github.run_number }}
-  #         token: ${{ secrets.RELEASE_TOKEN }}
+  release:
+    name: Release Apps
+    runs-on: macos-latest
+    needs: build-ios
+    steps:
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.RELEASE_TOKEN }}
