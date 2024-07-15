@@ -7,30 +7,30 @@ on:
       - dev
 
 jobs:
-  build-android:
-    name: Build Android
-    runs-on: ubuntu-latest
+  # build-android:
+  #   name: Build Android
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.22.2'  # Use your desired Flutter version
+  #   - name: Set up Flutter
+  #     uses: subosito/flutter-action@v2
+  #     with:
+  #       flutter-version: '3.22.2'  # Use your desired Flutter version
 
-    - name: Install dependencies
-      run: flutter pub get
+  #   - name: Install dependencies
+  #     run: flutter pub get
 
-    - name: Build APK
-      run: flutter build apk --release
+  #   - name: Build APK
+  #     run: flutter build apk --release
 
-    - name: Upload Android Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: android-release.apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+  #   - name: Upload Android Artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: android-release.apk
+  #       path: build/app/outputs/flutter-apk/app-release.apk
 
   build-ios:
     name: Build iOS
@@ -68,62 +68,63 @@ jobs:
 
   deploy:
     name: Deploy to App Center
-    needs: [build-android, build-ios]
+    # needs: [build-android, build-ios]
+    needs: build-ios
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Download Android Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: android-release.apk
+    # steps:
+    # - name: Download Android Artifact
+    #   uses: actions/download-artifact@v2
+    #   with:
+    #     name: android-release.apk
 
     - name: Download iOS Artifact
       uses: actions/download-artifact@v2
       with:
         name: ios-release.ipa
 
-    - name: Deploy Android to App Center
-      uses: microsoft/appcenter-upload-action@v1
-      with:
-        appcenter_app_name: 'vanda-cloud'
-        appcenter_owner_name: 'Vanda Ron'
-        appcenter_token: ${{ secrets.APPCENTER_TOKEN }}
-        app_path: android-release.apk
-        distribution_group: 'Collaborators'  # or your desired distribution group
+    # - name: Deploy Android to App Center
+    #   uses: microsoft/appcenter-github-action/upload@v1
+    #   with:
+    #     app_name: 'vanda-cloud'
+    #     owner_name: 'Vanda Ron'
+    #     api_token: ${{ secrets.APPCENTER_TOKEN }}
+    #     file: ios-release.ipa
+    #     distribution_group: 'Collaborators'  # or your desired distribution group
 
     - name: Deploy iOS to App Center
-      uses: microsoft/appcenter-upload-action@v1
+      uses: microsoft/appcenter-github-action/upload@v1
       with:
-        appcenter_app_name: 'vanda-cloud'
-        appcenter_owner_name: 'Vanda Ron'
-        appcenter_token: ${{ secrets.APPCENTER_TOKEN }}
-        app_path: ios-release.ipa
+        app_name: 'vanda-cloud'
+        owner_name: 'Vanda Ron'
+        api_token: ${{ secrets.APPCENTER_TOKEN }}
+        file: ios-release.ipa
         distribution_group: 'Collaborators'  # or your desired distribution group
 
-  release:
-    name: Release Apps
-    runs-on: macos-latest
-    needs: [build-android, build-ios]
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  # release:
+  #   name: Release Apps
+  #   runs-on: macos-latest
+  #   needs: [build-android, build-ios]
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
 
-    - name: Download Android Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: android-release.apk
+  #   - name: Download Android Artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: android-release.apk
 
-    - name: Download iOS Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: ios-release.ipa
+  #   - name: Download iOS Artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: ios-release.ipa
 
-    - name: Push to Releases
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/ios/iphoneos/*.ipa"
-        tag: v1.0.${{ github.run_number }}
-        token: ${{ secrets.RELEASE_TOKEN }}
+  #   - name: Push to Releases
+  #     uses: ncipollo/release-action@v1
+  #     with:
+  #       artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/ios/iphoneos/*.ipa"
+  #       tag: v1.0.${{ github.run_number }}
+  #       token: ${{ secrets.RELEASE_TOKEN }}
 
 
 # name: Flutter » Streamlined CI/CD Pipeline
