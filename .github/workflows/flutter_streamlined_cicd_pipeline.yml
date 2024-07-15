@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '22.x'
+          java-version: '17.x'
 
       - name: Cache Flutter SDK
         id: cache-flutter
