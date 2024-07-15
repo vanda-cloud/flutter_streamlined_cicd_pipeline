@@ -83,22 +83,18 @@ jobs:
         name: ios-release.ipa
 
     - name: Deploy Android to App Center
-      uses: microsoft/appcenter-github-action/upload@v1
-      with:
-        app_name: 'vanda-cloud'
-        owner_name: 'Vanda Ron'
-        api_token: ${{ secrets.APPCENTER_TOKEN }}
-        file: ios-release.ipa
-        distribution_group: 'Collaborators'  # or your desired distribution group
+      run: |
+        curl -F "ipa=@android-release.apk" \
+          -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+          -H "Accept: application/json" \
+          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads"
 
     - name: Deploy iOS to App Center
-      uses: microsoft/appcenter-github-action/upload@v1
-      with:
-        app_name: 'vanda-cloud'
-        owner_name: 'Vanda Ron'
-        api_token: ${{ secrets.APPCENTER_TOKEN }}
-        file: ios-release.ipa
-        distribution_group: 'Collaborators'  # or your desired distribution group
+      run: |
+        curl -F "ipa=@ios-release.ipa" \
+          -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+          -H "Accept: application/json" \
+          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud/release_uploads"
 
   release:
     name: Release Apps
