@@ -36,30 +36,34 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.22.2'  # Use your desired Flutter version
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17.x'
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
 
-    - name: Install CocoaPods
-      run: |
-        cd ios
-        pod install
+      - run: |
+          flutter build ios --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r app.ipa Payload
 
-    - name: Build IPA
-      run: flutter build ios --release --no-codesign
-
-    - name: Upload iOS Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: ios-release.ipa
-        path: build/ios/iphoneos/*.ipa
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-release.ipa
+          path: build/ios/iphoneos/*.ipa
 
   deploy:
     name: Deploy to App Center
