@@ -44,12 +44,12 @@ jobs:
       - name: Analyze code
         run: flutter analyze
 
-      - name: Archive Flutter SDK
-        # if: steps.cache-flutter.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: flutter-sdk
-          path: ~/.pub-cache
+      # - name: Archive Flutter SDK
+      #   # if: steps.cache-flutter.outputs.cache-hit != 'true'
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: flutter-sdk
+      #     path: ~/.pub-cache
 
   test:
     name: 4 Automated Tests
@@ -59,11 +59,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download Flutter SDK
-        uses: actions/download-artifact@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
-          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+          distribution: 'adopt'
+          java-version: '17.x'
+
+      - name: Cache Flutter SDK
+        id: cache-flutter
+        uses: actions/cache@v3
+        with:
           path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+
+      # - name: Download Flutter SDK
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+      #     path: ~/.pub-cache
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -87,11 +100,11 @@ jobs:
           distribution: 'adopt'
           java-version: '17.x'
       
-      - name: Download Flutter SDK
-        uses: actions/download-artifact@v3
-        with:
-          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
-          path: ~/.pub-cache
+      # - name: Download Flutter SDK
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+      #     path: ~/.pub-cache
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -114,12 +127,12 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17.x'
-          
-      - name: Download Flutter SDK
-        uses: actions/download-artifact@v3
-        with:
-          name: flutter-sdk # Ensure this matches the name used in upload-artifact above
-          path: ~/.pub-cache
+
+      # - name: Download Flutter SDK
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: flutter-sdk # Ensure this matches the name used in upload-artifact above
+      #     path: ~/.pub-cache
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
