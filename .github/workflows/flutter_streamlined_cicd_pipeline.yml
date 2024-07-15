@@ -81,6 +81,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17.x'
+      
       - name: Download Flutter SDK
         uses: actions/download-artifact@v3
         with:
@@ -103,6 +109,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17.x'
+          
       - name: Download Flutter SDK
         uses: actions/download-artifact@v3
         with:
