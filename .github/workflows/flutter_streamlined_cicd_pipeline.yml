@@ -7,30 +7,6 @@ on:
       - dev
 
 jobs:
-  # build-android:
-  #   name: Build Android
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v2
-
-  #   - name: Set up Flutter
-  #     uses: subosito/flutter-action@v2
-  #     with:
-  #       flutter-version: '3.22.2'  # Use your desired Flutter version
-
-  #   - name: Install dependencies
-  #     run: flutter pub get
-
-  #   - name: Build APK
-  #     run: flutter build apk --release
-
-  #   - name: Upload Android Artifact
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: android-release.apk
-  #       path: build/app/outputs/flutter-apk/app-release.apk
   build-ios:
     name: Build iOS
     runs-on: macos-latest
