@@ -84,10 +84,15 @@ jobs:
 
     - name: Deploy Android to App Center
       run: |
+        if [ -f "android-release.apk" ]; then
         curl -F "ipa=@android-release.apk" \
           -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
           -H "Accept: application/json" \
           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads"
+        else
+          echo "Android APK not found!"
+          exit 1
+        fi
 
     # - name: Deploy iOS to App Center
     #   run: |
