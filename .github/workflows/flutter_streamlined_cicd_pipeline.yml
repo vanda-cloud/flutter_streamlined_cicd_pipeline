@@ -32,39 +32,39 @@ jobs:
         name: android-release.apk
         path: build/app/outputs/flutter-apk/app-release.apk
 
-  build-ios:
-    name: Build iOS
-    runs-on: macos-latest
+  # build-ios:
+  #   name: Build iOS
+  #   runs-on: macos-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt'
-          java-version: '17.x'
+  #     - name: Set up Java
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'adopt'
+  #         java-version: '17.x'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.2' # specify the correct version
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: '3.22.2' # specify the correct version
 
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+  #     - run: |
+  #         flutter build ios --no-codesign
+  #         cd build/ios/iphoneos
+  #         mkdir Payload
+  #         cd Payload
+  #         ln -s ../Runner.app
+  #         cd ..
+  #         zip -r app.ipa Payload
 
-      - name: Upload iOS Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: ios-release.ipa
-          path: build/ios/iphoneos/*.ipa
+  #     - name: Upload iOS Artifact
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: ios-release.ipa
+  #         path: build/ios/iphoneos/*.ipa
 
   deploy:
     name: Deploy to App Center
@@ -89,37 +89,37 @@ jobs:
           -H "Accept: application/json" \
           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads"
 
-    - name: Deploy iOS to App Center
-      run: |
-        curl -F "ipa=@ios-release.ipa" \
-          -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
-          -H "Accept: application/json" \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud/release_uploads"
+    # - name: Deploy iOS to App Center
+    #   run: |
+    #     curl -F "ipa=@ios-release.ipa" \
+    #       -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+    #       -H "Accept: application/json" \
+    #       "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud/release_uploads"
 
-  release:
-    name: Release Apps
-    runs-on: macos-latest
-    needs: [build-android, build-ios]
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  # release:
+  #   name: Release Apps
+  #   runs-on: macos-latest
+  #   needs: [build-android, build-ios]
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
 
-    - name: Download Android Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: android-release.apk
+  #   - name: Download Android Artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: android-release.apk
 
-    - name: Download iOS Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: ios-release.ipa
+  #   - name: Download iOS Artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: ios-release.ipa
 
-    - name: Push to Releases
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/ios/iphoneos/*.ipa"
-        tag: v1.0.${{ github.run_number }}
-        token: ${{ secrets.RELEASE_TOKEN }}
+  #   - name: Push to Releases
+  #     uses: ncipollo/release-action@v1
+  #     with:
+  #       artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/ios/iphoneos/*.ipa"
+  #       tag: v1.0.${{ github.run_number }}
+  #       token: ${{ secrets.RELEASE_TOKEN }}
 
 
 # name: Flutter » Streamlined CI/CD Pipeline
