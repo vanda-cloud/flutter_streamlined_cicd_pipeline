@@ -45,15 +45,15 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: android-release
-        path: android-release.apk
+        path: android/
 
     - name: Verify Android Artifact
-      run: ls -l android-release.apk
+      run: ls -l android/
 
     - name: Deploy Android to App Center
       run: |
-        if [ -f "android-release.apk" ]; then
-          curl -F "ipa=@android-release.apk" \
+        if [ -f "android/app-release.apk" ]; then
+          curl -F "ipa=@android/app-release.apk" \
             -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
             -H "Accept: application/json" \
             "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads"
