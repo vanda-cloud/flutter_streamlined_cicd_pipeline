@@ -53,12 +53,12 @@ jobs:
     - name: Start Upload to App Center
       id: start-upload
       env:
-        APPCENTER_TOKEN_ANDROID: ${{ secrets.APPCENTER_TOKEN_ANDROID }}
+        APPCENTER_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
       run: |
         echo "Starting upload to App Center..."
 
         # Start the upload and retrieve upload_id and upload_url
-        UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
+        UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
           -H "Content-Type: application/json" \
           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads")
 
@@ -95,7 +95,7 @@ jobs:
         echo "APK upload successful."
 
         # Commit the upload
-        COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
+        COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
           -H "Content-Type: application/json" \
           -d '{"status": "committed"}' \
           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads/$UPLOAD_ID")
@@ -110,7 +110,7 @@ jobs:
     - name: Confirm Upload
       run: |
         echo "Checking upload status..."
-        curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN_ANDROID }}" \
+        curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
             "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
 
 
