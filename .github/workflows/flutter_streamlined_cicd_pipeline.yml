@@ -77,10 +77,10 @@ jobs:
       with:
         name: android-release.apk
 
-    - name: Download iOS Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: ios-release.ipa
+    # - name: Download iOS Artifact
+    #   uses: actions/download-artifact@v2
+    #   with:
+    #     name: ios-release.ipa
 
     - name: Deploy Android to App Center
       run: |
