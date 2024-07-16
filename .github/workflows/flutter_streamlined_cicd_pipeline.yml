@@ -68,7 +68,7 @@ jobs:
 
   deploy:
     name: Deploy to App Center
-    needs: [build-android, build-ios]
+    needs: [build-android]
     runs-on: ubuntu-latest
 
     steps:
