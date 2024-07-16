@@ -29,8 +29,8 @@ jobs:
     - name: Upload Android Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: android-release.apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: android-release
+        path: build/app/outputs/flutter-apk/android-release.apk
 
   # build-ios:
   #   name: Build iOS
@@ -75,7 +75,8 @@ jobs:
     - name: Download Android Artifact
       uses: actions/download-artifact@v2
       with:
-        name: app-release.apk
+        name: android-release
+        path: android-release.apk
 
     # - name: Download iOS Artifact
     #   uses: actions/download-artifact@v2
