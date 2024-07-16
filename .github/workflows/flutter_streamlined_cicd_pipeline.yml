@@ -7,34 +7,34 @@ on:
       - dev
 
 jobs:
-  # build-android:
-  #   name: Build Android
-  #   runs-on: ubuntu-latest
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-  #     - name: Set up Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.22.2'  # Use your desired Flutter version
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'  # Use your desired Flutter version
 
-  #     - name: Install dependencies
-  #       run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-  #     - name: Build APK
-  #       run: flutter build apk --release
+      - name: Build APK
+        run: flutter build apk --release
 
-  #     - name: Upload Android Artifact
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: android-release
-  #         path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-release
+          path: build/app/outputs/flutter-apk/app-release.apk
 
   deploy:
     name: Deploy to App Center
-    # needs: [build-android]
+    needs: [build-android]
     runs-on: ubuntu-latest
 
     steps:
