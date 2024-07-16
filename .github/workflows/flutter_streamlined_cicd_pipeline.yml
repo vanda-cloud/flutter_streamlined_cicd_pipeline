@@ -67,12 +67,14 @@ jobs:
           exit 1
         fi
 
+        echo "Upload response:"
+        echo "$UPLOAD_RESPONSE"
+
         UPLOAD_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_id')
         UPLOAD_URL=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_url')
 
         if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_URL" ]; then
           echo "Failed to retrieve upload_id or upload_url."
-          echo "Response: $UPLOAD_RESPONSE"
           exit 1
         fi
 
