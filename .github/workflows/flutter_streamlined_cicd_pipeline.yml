@@ -53,12 +53,12 @@ jobs:
       - name: Start Upload to App Center
         id: start-upload
         env:
-          APPCENTER_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+          APPCENTER_TOKEN_ANDROID: ${{ secrets.APPCENTER_TOKEN_ANDROID }}
         run: |
           echo "Starting upload to App Center..."
 
           # Start the upload and retrieve upload_id and upload_url
-          UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
+          UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
             -H "Content-Type: application/json" \
             "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases")
 
@@ -94,7 +94,7 @@ jobs:
           echo "APK upload successful."
 
           # Commit the upload
-          COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
+          COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
             -H "Content-Type: application/json" \
             -d '{"status": "committed"}' \
             "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases/7de8ad21-ad88-4e73-bd8b-37e1c5cc9de0")
@@ -109,7 +109,7 @@ jobs:
       - name: Confirm Upload
         run: |
           echo "Checking upload status..."
-          curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+          curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN_ANDROID }}" \
               "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
 
 
@@ -207,7 +207,7 @@ jobs:
 #       run: |
 #         if [ -f "android-release.apk" ]; then
 #         curl -F "ipa=@android-release.apk" \
-#           -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+#           -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN_ANDROID }}" \
 #           -H "Accept: application/json" \
 #           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases"
 #         else
@@ -218,7 +218,7 @@ jobs:
     # - name: Deploy iOS to App Center
     #   run: |
     #     curl -F "ipa=@ios-release.ipa" \
-    #       -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
+    #       -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN_ANDROID }}" \
     #       -H "Accept: application/json" \
     #       "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud/release_uploads"
 
