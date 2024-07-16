@@ -51,16 +51,45 @@ jobs:
       run: ls -l android/
 
     - name: Deploy Android to App Center
+      env:
+        APPCENTER_TOKEN_ANDROID: ${{ secrets.APPCENTER_TOKEN_ANDROID }}
       run: |
         if [ -f "android/app-release.apk" ]; then
-          curl -F "ipa=@android/app-release.apk" \
-            -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
-            -H "Accept: application/json" \
-            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads"
+          echo "Uploading APK to App Center..."
+
+          # Start the upload
+          UPLOAD_ID=$(curl -X POST -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
+            -H "Content-Type: application/json" \
+            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads" | jq -r '.upload_id')
+          
+          URL=$(curl -X POST -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
+            -H "Content-Type: application/json" \
+            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads" | jq -r '.upload_url')
+
+          # Upload the file
+          curl -X PUT \
+            -F "ipa=@android/app-release.apk" \
+            -H "Content-Type: application/octet-stream" \
+            "$URL"
+          
+          # Commit the upload
+          curl -X PATCH -H "X-API-Token: $APPCENTER_TOKEN_ANDROID" \
+            -H "Content-Type: application/json" \
+            -d '{"status": "committed"}' \
+            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads/$UPLOAD_ID"
+
+          echo "APK upload complete"
         else
           echo "Android APK not found!"
           exit 1
         fi
+
+    - name: Confirm Upload
+      run: |
+        echo "Checking upload status..."
+        curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN_ANDROID }}" \
+            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
+
 
 
 
