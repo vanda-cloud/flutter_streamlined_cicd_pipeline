@@ -1,24 +1,27 @@
-name: Flutter » Streamlined CI/CD Pipeline
-run-name: ${{ github.actor }} is publishing (${{ github.ref_name }}) 🚀
+name: Build and Deploy
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
-  build-android:
-    name: Build Android
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.22.2'  # Use your desired Flutter version
+        flutter-version: '2.2.3'
 
     - name: Install dependencies
       run: flutter pub get
@@ -26,92 +29,29 @@ jobs:
     - name: Build APK
       run: flutter build apk --release
 
-    - name: Upload Android Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: android-release
-        path: build/app/outputs/flutter-apk/app-release.apk
-
-  deploy:
-    name: Deploy to App Center
-    needs: [build-android]
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Download Android Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: android-release
-        path: android/
-
-    - name: Verify Android Artifact
-      run: ls -l android/
-
-    - name: Start Upload to App Center
-      id: start-upload
+    - name: Upload APK to App Center
       env:
-        APPCENTER_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+        APPCENTER_APP_NAME: your-app-name
+        APPCENTER_OWNER_NAME: your-owner-name
+        APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
       run: |
-        echo "Starting upload to App Center..."
+        APK_PATH=build/app/outputs/flutter-apk/app-release.apk
+        UPLOAD_RESPONSE=$(curl --location --request POST "https://api.appcenter.ms/v0.1/apps/$APPCENTER_OWNER_NAME/$APPCENTER_APP_NAME/release_uploads" \
+          --header "Content-Type: application/json" \
+          --header "X-API-Token: $APPCENTER_API_TOKEN" \
+          --data-raw '{}')
+        UPLOAD_ID=$(echo $UPLOAD_RESPONSE | jq -r '.upload_id')
+        UPLOAD_URL=$(echo $UPLOAD_RESPONSE | jq -r '.upload_url')
 
-        # Start the upload and retrieve upload_id and upload_url
-        UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
-          -H "Content-Type: application/json" \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases")
+        curl --location --request POST "$UPLOAD_URL" \
+          --header "Content-Type: application/vnd.android.package-archive" \
+          --data-binary @"$APK_PATH"
 
-        if [ $? -ne 0 ]; then
-          echo "Failed to start upload. Check network or API endpoint."
-          exit 1
-        fi
+        curl --location --request PATCH "https://api.appcenter.ms/v0.1/apps/$APPCENTER_OWNER_NAME/$APPCENTER_APP_NAME/release_uploads/$UPLOAD_ID" \
+          --header "Content-Type: application/json" \
+          --header "X-API-Token: $APPCENTER_API_TOKEN" \
+          --data-raw '{"status": "committed"}'
 
-        echo "Upload response:"
-        echo "$UPLOAD_RESPONSE"
-
-        UPLOAD_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.id')
-        UPLOAD_URL=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_domain + "/upload/distribution" + .url_encoded_token')
-
-        if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_URL" ]; then
-          echo "Failed to retrieve upload_id or upload_url."
-          exit 1
-        fi
-
-        echo "Upload ID: $UPLOAD_ID"
-        echo "Upload URL: $UPLOAD_URL"
-
-        # Upload the file using the obtained upload_url
-        UPLOAD_RESULT=$(curl -sSf -X PUT \
-          -F "ipa=@android/app-release.apk" \
-          -H "Content-Type: application/octet-stream" \
-          "$UPLOAD_URL")
-
-        if [ $? -ne 0 ]; then
-          echo "Failed to upload APK file."
-          exit 1
-        fi
-
-        echo "APK upload successful."
-
-        # Commit the upload
-        COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{"status": "committed"}' \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases/$UPLOAD_ID")
-
-        if [ $? -ne 0 ]; then
-          echo "Failed to commit upload."
-          exit 1
-        fi
-
-        echo "Upload committed successfully."
-
-    - name: Confirm Upload
-      run: |
-        echo "Checking upload status..."
-        curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
-            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
 
 
 
