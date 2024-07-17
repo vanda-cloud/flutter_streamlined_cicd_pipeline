@@ -61,6 +61,9 @@ jobs:
           -H "Content-Type: application/json" \
           "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads")
 
+        echo "Upload response:"
+        echo "$UPLOAD_RESPONSE"
+
         if [ $? -ne 0 ]; then
           echo "Failed to start upload. Check network or API endpoint."
           exit 1
@@ -70,7 +73,7 @@ jobs:
         UPLOAD_URL=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_url')
 
         if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_URL" ]; then
-          echo "Failed to retrieve upload_id or upload_url."
+          echo "Failed to retrieve upload_id or upload_url. Response: $UPLOAD_RESPONSE"
           exit 1
         fi
 
@@ -104,6 +107,7 @@ jobs:
         echo "Checking upload status..."
         curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
             "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
+
 
 
 
