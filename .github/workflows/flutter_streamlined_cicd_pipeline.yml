@@ -31,7 +31,7 @@ jobs:
 
       - name: Verify IPA file
         run: |
-          unzip -l build/ios/app.ipa
+          unzip -l build/ios/iphoneos/app.ipa
 
   #     - name: Upload iOS Artifact
   #       uses: actions/upload-artifact@v2
