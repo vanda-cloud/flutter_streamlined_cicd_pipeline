@@ -29,24 +29,22 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.7' # Specify the required Ruby version
+          ruby-version: '2.7'
           bundler-cache: true
         env:
-          FLUTTER_ROOT: /Users/runner/hostedtoolcache/flutter/stable-3.22.2-arm64
+          FLUTTER_ROOT: /Users/runner/hostedtoolcache/flutter/3.22.2-stable
           PUB_CACHE: /Users/runner/.pub-cache
 
       - name: Install Bundler
         run: gem install bundler -v 2.4.22
 
       - name: Install Fastlane
-        run: |
-          bundle install
+        run: bundle install
         working-directory: ios
 
       - name: Create IPA
-        run: |
-          cd ios
-          bundle exec fastlane build_ios
+        run: bundle exec fastlane build_ios
+        working-directory: ios
 
       - name: Upload to App Center
         env:
