@@ -67,6 +67,7 @@ jobs:
           API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
           RELEASE_FILE_LOCATION: "ios/app.ipa"
           FILE_NAME: "app.ipa"
+          
         run: |
         #!/bin/bash
         set -e
