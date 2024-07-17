@@ -15,6 +15,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set up Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0
+
+      - name: Install Fastlane
+        run: gem install fastlane -NV
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -34,6 +42,7 @@ jobs:
           APP_CENTER_APP_NAME: vanda-cloud
           APP_CENTER_OWNER_NAME: vanda-cloud
         run: fastlane upload_to_app_center
+
 
 # jobs:
 #   build-ios:
