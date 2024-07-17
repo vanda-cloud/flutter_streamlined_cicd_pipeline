@@ -20,12 +20,6 @@ jobs:
         with:
           ruby-version: '2.7'
 
-      - name: Install compatible Bundler version
-        run: gem install bundler -v 2.4.22
-
-      - name: Install CocoaPods
-        run: pod install --project-directory=ios
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
