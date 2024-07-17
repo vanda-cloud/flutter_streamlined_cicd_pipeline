@@ -35,9 +35,11 @@ jobs:
           FLUTTER_ROOT: /Users/runner/hostedtoolcache/flutter/stable-3.22.2-arm64
           PUB_CACHE: /Users/runner/.pub-cache
 
+      - name: Install Bundler
+        run: gem install bundler -v 2.4.22
+
       - name: Install Fastlane
         run: |
-          gem install bundler
           bundle install
         working-directory: ios
 
