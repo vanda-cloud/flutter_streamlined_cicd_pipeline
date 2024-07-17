@@ -23,9 +23,6 @@ jobs:
       - name: Install compatible Bundler version
         run: gem install bundler -v 2.4.22
 
-      - name: Install dependencies
-        run: bundle install
-
       - name: Install CocoaPods
         run: pod install --project-directory=ios
 
