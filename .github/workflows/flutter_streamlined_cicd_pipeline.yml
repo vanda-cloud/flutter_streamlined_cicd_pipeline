@@ -38,7 +38,7 @@ jobs:
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ios-release.ipa
+          name: ios-release
           path: build/ios/iphoneos/*.ipa
 
   deploy:
@@ -50,30 +50,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Download Android Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: android-release
-          path: android/
-
-      - name: Verify Android Artifact
-        run: ls -l android/
-
-      - name: Deploy Android to App Center
-        env:
-          DISTRIBUTION_GROUP: "Tester"
-          OWNER_NAME: "vanda-cloud"
-          APP_NAME: "vanda-cloud-1"
-          API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
-          RELEASE_FILE_LOCATION: "android/app-release.apk"
-          FILE_NAME: "app-release.apk"
-        run: |
-          # Your existing Android deployment script here
-
       - name: Download iOS Artifact
         uses: actions/download-artifact@v2
         with:
-          name: ios-release.ipa
+          name: ios-release
           path: ios/
 
       - name: Verify iOS Artifact
