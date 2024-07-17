@@ -50,63 +50,131 @@ jobs:
     - name: Verify Android Artifact
       run: ls -l android/
 
-    - name: Start Upload to App Center
-      id: start-upload
+    - name: Deploy to App Center
       env:
-        APPCENTER_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+        DISTRIBUTION_GROUP: "Tester"
+        OWNER_NAME: "vanda-cloud"
+        APP_NAME: "vanda-cloud-1"
+        API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+        RELEASE_FILE_LOCATION: "android/app-release.apk"
+        FILE_NAME: "app-release.apk"
       run: |
-        echo "Starting upload to App Center..."
+        #!/bin/bash
+        set -e
 
-        UPLOAD_RESPONSE=$(curl -s -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
+        echo "=========CREATE NEW RELEASE=========="
+        createNewReleaseUploadResponse=$(curl -X POST "https://api.appcenter.ms/v0.1/apps/$OWNER_NAME/$APP_NAME/uploads/releases" \
+          -H  "accept: application/json" \
+          -H  "X-API-Token: $API_TOKEN" \
+          -H  "Content-Type: application/json" \
+          -H "Content-Length: 0")
+
+        echo "Response JSON:"
+        echo "$createNewReleaseUploadResponse"
+
+        ID=$(echo "$createNewReleaseUploadResponse" | jq -r '.id')
+        PACKAGE_ASSET_ID=$(echo "$createNewReleaseUploadResponse" | jq -r '.package_asset_id')
+        URL_ENCODED_TOKEN=$(echo "$createNewReleaseUploadResponse" | jq -r '.url_encoded_token')
+
+        echo "$ID"
+        echo "$PACKAGE_ASSET_ID"
+        echo "$URL_ENCODED_TOKEN"
+
+        FILE_SIZE_BYTES=$(wc -c $RELEASE_FILE_LOCATION | awk '{print $1}')
+        echo "$FILE_SIZE_BYTES"
+        APP_TYPE='application/vnd.android.package-archive'
+
+        echo "=========UPLOAD METADATA TO GET CHUNK SIZE=========="
+        METADATA_URL="https://file.appcenter.ms/upload/set_metadata/$PACKAGE_ASSET_ID?file_name=$FILE_NAME&file_size=$FILE_SIZE_BYTES&token=$URL_ENCODED_TOKEN&content_type=$APP_TYPE"
+
+        metaDataResponse=$(curl -s -d POST \
           -H "Content-Type: application/json" \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads")
+          -H "Accept: application/json" \
+          -H "X-API-Token: $API_TOKEN" "$METADATA_URL")
 
-        echo "Upload response:"
-        echo "$UPLOAD_RESPONSE"
+        echo "$metaDataResponse"
 
-        if [ $? -ne 0 ]; then
-          echo "Failed to start upload. Check network or API endpoint."
-          exit 1
-        fi
+        CHUNK_SIZE=$(echo "$metaDataResponse" | jq -r '.chunk_size')
 
-        UPLOAD_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_id')
-        UPLOAD_URL=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_url')
+        echo "Chunk Size = $CHUNK_SIZE"
 
-        if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_URL" ]; then
-          echo "Failed to retrieve upload_id or upload_url. Response: $UPLOAD_RESPONSE"
-          exit 1
-        fi
+        echo "=========CREATE FOLDER TEMP/SPLIT TO STORAGE LIST CHUNK FILE AFTER SPLIT=========="
+        mkdir -p android/temp
 
-        echo "Upload ID: $UPLOAD_ID"
-        echo "Upload URL: $UPLOAD_URL"
+        echo "=========SPLIT FILE=========="
+        split -b "$CHUNK_SIZE" "$RELEASE_FILE_LOCATION" "android/temp/split"
 
-        curl -s -X PUT \
-          --data-binary @android/app-release.apk \
-          -H "Content-Type: application/vnd.android.package-archive" \
-          "$UPLOAD_URL"
+        echo "=========UPLOAD CHUNK=========="
+        BLOCK_NUMBER=0
 
-        if [ $? -ne 0 ]; then
-          echo "Failed to upload APK file."
-          exit 1
-        fi
+        for i in android/temp/*
+        do
+          if [ -f "$i" ]; then
+            BLOCK_NUMBER=$(($BLOCK_NUMBER + 1))
+            CONTENT_LENGTH=$(wc -c "$i" | awk '{print $1}')
 
-        curl -s -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
+            UPLOAD_CHUNK_URL="https://file.appcenter.ms/upload/upload_chunk/$PACKAGE_ASSET_ID?token=$URL_ENCODED_TOKEN&block_number=$BLOCK_NUMBER"
+
+            curl -X POST "$UPLOAD_CHUNK_URL" \
+              --data-binary "@$i" \
+              -H "Content-Length: $CONTENT_LENGTH" \
+              -H "Content-Type: $APP_TYPE"
+          fi
+        done
+
+        echo "=========FINISHED=========="
+        FINISHED_URL="https://file.appcenter.ms/upload/finished/$PACKAGE_ASSET_ID?token=$URL_ENCODED_TOKEN"
+        finishedUploadResponse=$(curl -d POST \
           -H "Content-Type: application/json" \
-          -d '{ "status": "committed" }' \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads/$UPLOAD_ID"
+          -H "accept: application/json" \
+          -H "X-API-Token: $API_TOKEN" "$FINISHED_URL")
+        echo "$finishedUploadResponse"
 
-        if [ $? -ne 0 ]; then
-          echo "Failed to commit upload."
-          exit 1
+        echo "=========COMMIT=========="
+        COMMIT_URL="https://api.appcenter.ms/v0.1/apps/$OWNER_NAME/$APP_NAME/uploads/releases/$ID"
+        commitResponse=$(curl -H "Content-Type: application/json" \
+          -H "accept: application/json" \
+          -H "X-API-Token: $API_TOKEN" \
+          --data "{\"upload_status\": \"uploadFinished\",\"id\": \"$ID\"}" \
+          -X PATCH "$COMMIT_URL")
+        echo "$commitResponse"
+
+        echo "=========POLL RESULT=========="
+        RELEASE_STATUS_URL="https://api.appcenter.ms/v0.1/apps/$OWNER_NAME/$APP_NAME/uploads/releases/$ID"
+        echo "$RELEASE_STATUS_URL"
+
+        release_id=null
+        counter=0
+        max_poll_attempts=15
+
+        while [[ $release_id == null && ($counter -lt $max_poll_attempts)]]
+        do
+            echo "$counter"
+            poll_result=$(curl -X 'GET' "$RELEASE_STATUS_URL" \
+              -H "accept: application/json" \
+              -H "X-API-Token: $API_TOKEN")
+            echo "$poll_result"
+            release_id=$(echo "$poll_result" | jq -r '.release_distinct_id')
+            echo "$release_id"
+            counter=$((counter + 1))
+            sleep 3
+        done
+
+        if [[ $release_id == null ]];
+        then
+            echo "Failed to find release from appcenter"
+            exit 1
         fi
 
-        echo "Upload committed successfully."
-
-    - name: Confirm Upload
-      run: |
-        echo "Checking upload status..."
-        curl -H "X-API-Token: ${{ secrets.APPCENTER_TOKEN }}" \
-            "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/releases/latest" | jq .
+        echo "=========DISTRIBUTE=========="
+        DISTRIBUTE_URL="https://api.appcenter.ms/v0.1/apps/$OWNER_NAME/$APP_NAME/releases/$release_id"
+        echo "$DISTRIBUTE_URL"
+        distributeResponse=$(curl -H 'Content-Type: text/plain' \
+          -H 'accept: application/json' \
+          -H "X-API-Token: $API_TOKEN" \
+          --data '{"destinations": [{ "name": "'"$DISTRIBUTION_GROUP"'"}] }' \
+          -X PATCH "$DISTRIBUTE_URL")
+        echo "$distributeResponse"
 
 
 
