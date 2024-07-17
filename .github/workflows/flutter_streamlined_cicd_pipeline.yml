@@ -7,58 +7,87 @@ on:
       - dev
 
 jobs:
-  build-android:
-    name: Build Android
-    runs-on: ubuntu-latest
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.22.2'  # Use your desired Flutter version
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17.x'
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # specify the correct version
 
-    - name: Build APK
-      run: flutter build apk --release
+      - run: |
+          flutter build ios --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r app.ipa Payload
 
-    - name: Upload Android Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: android-release
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-release.ipa
+          path: build/ios/iphoneos/*.ipa
 
   deploy:
     name: Deploy to App Center
-    needs: [build-android]
+    needs: [build-ios]
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Download Android Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: android-release
-        path: android/
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: android-release
+          path: android/
 
-    - name: Verify Android Artifact
-      run: ls -l android/
+      - name: Verify Android Artifact
+        run: ls -l android/
 
-    - name: Deploy to App Center
-      env:
-        DISTRIBUTION_GROUP: "Tester"
-        OWNER_NAME: "vanda-cloud"
-        APP_NAME: "vanda-cloud-1"
-        API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
-        RELEASE_FILE_LOCATION: "android/app-release.apk"
-        FILE_NAME: "app-release.apk"
-      run: |
+      - name: Deploy Android to App Center
+        env:
+          DISTRIBUTION_GROUP: "Tester"
+          OWNER_NAME: "vanda-cloud"
+          APP_NAME: "vanda-cloud-1"
+          API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+          RELEASE_FILE_LOCATION: "android/app-release.apk"
+          FILE_NAME: "app-release.apk"
+        run: |
+          # Your existing Android deployment script here
+
+      - name: Download iOS Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ios-release.ipa
+          path: ios/
+
+      - name: Verify iOS Artifact
+        run: ls -l ios/
+
+      - name: Deploy iOS to App Center
+        env:
+          DISTRIBUTION_GROUP: "Tester"
+          OWNER_NAME: "vanda-cloud"
+          APP_NAME: "vanda-cloud"
+          API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
+          RELEASE_FILE_LOCATION: "ios/app.ipa"  # Update with correct iOS artifact path
+          FILE_NAME: "app.ipa"
+        run: |
         #!/bin/bash
         set -e
 
