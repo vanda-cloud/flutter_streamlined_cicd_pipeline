@@ -15,11 +15,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
         with:
-          distribution: 'adopt'
-          java-version: '17.x'
+          ruby-version: 2.7
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Install CocoaPods
+        run: pod install --project-directory=ios
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
