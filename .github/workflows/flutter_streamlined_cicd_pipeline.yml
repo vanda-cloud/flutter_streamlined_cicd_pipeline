@@ -68,6 +68,7 @@ jobs:
           RELEASE_FILE_LOCATION: "ios/app.ipa"
           FILE_NAME: "app.ipa"
         run: |
+          #!/bin/bash
           set -e
 
           echo "=========CREATE NEW RELEASE=========="
