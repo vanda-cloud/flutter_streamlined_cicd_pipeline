@@ -44,7 +44,7 @@ jobs:
   deploy:
     name: Deploy iOS to App Center
     needs: [build-ios]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
@@ -61,9 +61,9 @@ jobs:
 
       - name: Deploy iOS to App Center
         env:
-          DISTRIBUTION_GROUP: "Tester"  # Replace with your distribution group
+          DISTRIBUTION_GROUP: "Tester"
           OWNER_NAME: "vanda-cloud"
-          APP_NAME: "vanda-cloud-1"
+          APP_NAME: "vanda-cloud"
           API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
           RELEASE_FILE_LOCATION: "ios/app.ipa"
           FILE_NAME: "app.ipa"
