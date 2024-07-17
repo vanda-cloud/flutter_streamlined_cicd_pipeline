@@ -31,17 +31,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS (No Codesign)
-        run: fastlane build_ios
-        env:
-          FASTLANE_SKIP_SIGH: "true"  # Skip Sigh for non-interactive mode
-
-      - name: Upload to App Center
+      - name: Run Fastlane Commands
+        run: |
+          cd ios/fastlane
+          fastlane build_ios
+          fastlane upload_to_app_center
         env:
           APP_CENTER_API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
           APP_CENTER_APP_NAME: vanda-cloud
           APP_CENTER_OWNER_NAME: vanda-cloud
-        run: fastlane upload_to_app_center
 
 
 # jobs:
