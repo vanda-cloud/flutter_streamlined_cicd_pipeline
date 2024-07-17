@@ -34,8 +34,6 @@ jobs:
           APP_CENTER_APP_NAME: vanda-cloud
           APP_CENTER_OWNER_NAME: vanda-cloud
         run: fastlane upload_to_app_center
-        env:
-          FASTLANE_SKIP_SIGH: "true"  # Skip Sigh for non-interactive mode
 
 # jobs:
 #   build-ios:
