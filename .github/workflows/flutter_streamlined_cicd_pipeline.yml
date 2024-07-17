@@ -63,7 +63,7 @@ jobs:
         env:
           DISTRIBUTION_GROUP: "Tester"  # Replace with your distribution group
           OWNER_NAME: "vanda-cloud"
-          APP_NAME: "vanda-cloud"
+          APP_NAME: "vanda-cloud-1"
           API_TOKEN: ${{ secrets.APPCENTER_TOKEN }}
           RELEASE_FILE_LOCATION: "ios/app.ipa"
           FILE_NAME: "app.ipa"
