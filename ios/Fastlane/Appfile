@@ -1,29 +1,3 @@
-default_platform(:ios)
 
-platform :ios do
-  desc "Build the iOS app for testing (no codesign)"
-  lane :build_ios do
-    gym(
-      scheme: "Runner", # Replace with your scheme name if different
-      configuration: "Release",
-      export_options: {
-        compileBitcode: false,
-        method: "development", # Use development method for non-signed builds
-        provisioningProfiles: {
-          "<your_bundle_identifier>": "None" # Replace with your app's bundle identifier
-        }
-      }
-    )
-  end
-
-  desc "Upload the iOS app to App Center"
-  lane :upload_to_app_center do
-    appcenter_upload(
-      api_token: ENV["APP_CENTER_API_TOKEN"],
-      owner_name: ENV["APP_CENTER_OWNER_NAME"],
-      app_name: ENV["APP_CENTER_APP_NAME"],
-      file: "./ios/build/ios/ipa/Runner.ipa",
-      groups: ["Collaborators"] # Replace with your desired distribution group
-    )
-  end
-end
+# apple_id("<your_apple_id>")
+# team_id("<your_team_id>")

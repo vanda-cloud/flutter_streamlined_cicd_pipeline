@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Fastlane Commands
         run: |
-          cd $GITHUB_WORKSPACE/ios/fastlane  # Adjust if your fastlane directory is named differently
+          cd ios/fastlane
           fastlane build_ios
           fastlane upload_to_app_center
         env:
