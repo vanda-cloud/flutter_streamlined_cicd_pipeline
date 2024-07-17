@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Fastlane Commands
         run: |
-          cd ios/fastlane
+          cd $GITHUB_WORKSPACE/ios/fastlane
           fastlane build_ios
           fastlane upload_to_app_center
         env:
