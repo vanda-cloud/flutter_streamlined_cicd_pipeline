@@ -23,13 +23,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Install Fastlane
-        run: |
-          sudo gem install fastlane -NV
-          fastlane install_plugins
-
       - name: Build iOS (No Codesign)
         run: fastlane build_ios
+        env:
+          FASTLANE_SKIP_SIGH: "true"  # Skip Sigh for non-interactive mode
 
       - name: Upload to App Center
         env:
@@ -37,6 +34,8 @@ jobs:
           APP_CENTER_APP_NAME: vanda-cloud
           APP_CENTER_OWNER_NAME: vanda-cloud
         run: fastlane upload_to_app_center
+        env:
+          FASTLANE_SKIP_SIGH: "true"  # Skip Sigh for non-interactive mode
 
 # jobs:
 #   build-ios:
