@@ -25,8 +25,20 @@ jobs:
         with:
           flutter-version: '3.22.2' # specify the correct version
 
+      - name: Install CocoaPods
+        run: pod install --project-directory=ios
+
       - name: Build iOS
         run: flutter build ios --release --no-codesign
+
+      - name: Archive the app
+        run: |
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/ios/archive/MyApp.xcarchive \
+            clean archive
 
       - name: Create IPA
         run: |
