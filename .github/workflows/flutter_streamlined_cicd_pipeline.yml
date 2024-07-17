@@ -86,7 +86,7 @@ jobs:
           echo "$URL_ENCODED_TOKEN"
           FILE_SIZE_BYTES=$(wc -c $RELEASE_FILE_LOCATION | awk '{print $1}')
           echo "$FILE_SIZE_BYTES"
-          APP_TYPE='application/octet-stream'
+          APP_TYPE='application/vnd.apple.pkpass'
           echo "=========UPLOAD METADATA TO GET CHUNK SIZE=========="
           METADATA_URL="https://file.appcenter.ms/upload/set_metadata/$PACKAGE_ASSET_ID?file_name=$FILE_NAME&file_size=$FILE_SIZE_BYTES&token=$URL_ENCODED_TOKEN&content_type=$APP_TYPE"
           metaDataResponse=$(curl -s -d POST \
