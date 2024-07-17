@@ -23,6 +23,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install Fastlane
+        run: |
+          sudo gem install fastlane -NV
+          fastlane install_plugins
+
       - name: Build iOS (No Codesign)
         run: fastlane build_ios
 
