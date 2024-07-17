@@ -70,6 +70,7 @@ jobs:
         run: |
         #!/bin/bash
         set -e
+        
         echo "=========CREATE NEW RELEASE=========="
         createNewReleaseUploadResponse=$(curl -X POST "https://api.appcenter.ms/v0.1/apps/$OWNER_NAME/$APP_NAME/uploads/releases" \
           -H  "accept: application/json" \
