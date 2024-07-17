@@ -26,20 +26,22 @@ jobs:
         with:
           flutter-version: '3.22.2' # specify the correct version
 
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA
+        run: |
+          mkdir -p build/ios/ipa
+          xcodebuild -exportArchive \
+            -archivePath build/ios/archive/MyApp.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/exportOptions.plist
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v2
         with:
           name: ios-release
-          path: build/ios/iphoneos/app.ipa
+          path: build/ios/app.ipa
 
   deploy:
     name: Deploy iOS to App Center
@@ -86,7 +88,7 @@ jobs:
           echo "$URL_ENCODED_TOKEN"
           FILE_SIZE_BYTES=$(wc -c $RELEASE_FILE_LOCATION | awk '{print $1}')
           echo "$FILE_SIZE_BYTES"
-          APP_TYPE='application/vnd.apple.pkpass'
+          APP_TYPE='application/octet-stream'
           echo "=========UPLOAD METADATA TO GET CHUNK SIZE=========="
           METADATA_URL="https://file.appcenter.ms/upload/set_metadata/$PACKAGE_ASSET_ID?file_name=$FILE_NAME&file_size=$FILE_SIZE_BYTES&token=$URL_ENCODED_TOKEN&content_type=$APP_TYPE"
           metaDataResponse=$(curl -s -d POST \
