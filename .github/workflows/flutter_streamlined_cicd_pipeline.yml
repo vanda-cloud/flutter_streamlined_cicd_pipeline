@@ -57,54 +57,40 @@ jobs:
       run: |
         echo "Starting upload to App Center..."
 
-        # Start the upload and retrieve upload_id and upload_url
-        UPLOAD_RESPONSE=$(curl -sSf -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
+        UPLOAD_RESPONSE=$(curl -s -X POST -H "X-API-Token: $APPCENTER_TOKEN" \
           -H "Content-Type: application/json" \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases")
+          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads")
 
         if [ $? -ne 0 ]; then
           echo "Failed to start upload. Check network or API endpoint."
           exit 1
         fi
 
-        echo "Upload response:"
-        echo "$UPLOAD_RESPONSE"
+        UPLOAD_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_id')
+        UPLOAD_URL=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_url')
 
-        UPLOAD_ID=$(echo "$UPLOAD_RESPONSE" | jq -r '.id')
-        UPLOAD_DOMAIN=$(echo "$UPLOAD_RESPONSE" | jq -r '.upload_domain')
-        URL_ENCODED_TOKEN=$(echo "$UPLOAD_RESPONSE" | jq -r '.url_encoded_token')
-
-        if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_DOMAIN" ] || [ -z "$URL_ENCODED_TOKEN" ]; then
-          echo "Failed to retrieve upload_id, upload_domain, or url_encoded_token."
+        if [ -z "$UPLOAD_ID" ] || [ -z "$UPLOAD_URL" ]; then
+          echo "Failed to retrieve upload_id or upload_url."
           exit 1
         fi
 
-        # Construct the upload URL
-        UPLOAD_URL="$UPLOAD_DOMAIN/upload/distribution$URL_ENCODED_TOKEN"
-        
         echo "Upload ID: $UPLOAD_ID"
-        echo "Upload Domain: $UPLOAD_DOMAIN"
-        echo "URL Encoded Token: $URL_ENCODED_TOKEN"
         echo "Upload URL: $UPLOAD_URL"
 
-        # Upload the file using the constructed upload_url
-        UPLOAD_RESULT=$(curl -sSf -X POST \
-          -F "ipa=@android/app-release.apk" \
-          -H "Content-Type: application/octet-stream" \
-          "$UPLOAD_URL")
+        curl -s -X PUT \
+          --data-binary @android/app-release.apk \
+          -H "Content-Type: application/vnd.android.package-archive" \
+          "$UPLOAD_URL"
 
         if [ $? -ne 0 ]; then
           echo "Failed to upload APK file."
           exit 1
         fi
 
-        echo "APK upload successful."
-
-        # Commit the upload
-        COMMIT_RESULT=$(curl -sSf -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
+        curl -s -X PATCH -H "X-API-Token: $APPCENTER_TOKEN" \
           -H "Content-Type: application/json" \
-          -d '{"status": "committed"}' \
-          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/uploads/releases/$UPLOAD_ID")
+          -d '{ "status": "committed" }' \
+          "https://api.appcenter.ms/v0.1/apps/vanda-cloud/vanda-cloud-1/release_uploads/$UPLOAD_ID"
 
         if [ $? -ne 0 ]; then
           echo "Failed to commit upload."
